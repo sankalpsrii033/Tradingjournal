@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Akshat Trading Journal • Institutional Grade</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0a0b0f;
+      --bg-secondary: #12141c;
+      --glass-bg: rgba(18, 20, 28, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.06);
+      --text-primary: #edeff5;
+      --text-secondary: #9ca3b8;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.25);
+      --profit: #10b981;
+      --loss: #ef4444;
+      --breakeven: #f59e0b;
+      --neutral-blue: #1e293b;
+      --card-shadow: 0 20px 35px rgba(0, 0, 0, 0.7);
+      --blur-amount: 18px;
+      --transition: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+      --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 20%, #1a1e2b, #0a0b0f 80%);
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.2rem;
+      margin: 0;
+    }
+
+    /* main app container */
+    .terminal {
+      max-width: 1440px;
+      width: 100%;
+      height: 95vh;
+      background: rgba(10, 11, 15, 0.7);
+      backdrop-filter: blur(var(--blur-amount));
+      -webkit-backdrop-filter: blur(var(--blur-amount));
+      border: 1px solid var(--glass-border);
+      border-radius: 2.5rem;
+      box-shadow: var(--card-shadow), 0 0 40px rgba(59, 130, 246, 0.08);
+      display: flex;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    /* sidebar */
+    .sidebar {
+      width: 270px;
+      background: rgba(8, 9, 13, 0.75);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.8rem 1rem;
+      gap: 0.4rem;
+      transition: 0.25s ease;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      padding: 0.7rem 1rem;
+      border-radius: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      transition: var(--transition);
+      cursor: pointer;
+      letter-spacing: -0.2px;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item i { font-style: normal; opacity: 0.8; }
+    .nav-item.active {
+      background: rgba(59, 130, 246, 0.12);
+      color: white;
+      box-shadow: 0 0 12px var(--accent-glow);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .main-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .top-bar {
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .view-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.8rem 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.4rem;
+      align-content: start;
+    }
+
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 1.5rem;
+      padding: 1.4rem 1.3rem;
+      box-shadow: 0 10px 25px -8px rgba(0,0,0,0.6);
+      transition: 0.2s;
+      color: var(--text-primary);
+    }
+    .card:hover { border-color: rgba(255,255,255,0.15); }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+    .profit-color { color: var(--profit); }
+    .loss-color { color: var(--loss); }
+    .amber { color: var(--breakeven); }
+    .blue-accent { color: var(--accent); }
+
+    button {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 500;
+      backdrop-filter: blur(5px);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+    }
+    .day-cell {
+      background: rgba(255,255,255,0.03);
+      border-radius: 0.8rem;
+      padding: 0.6rem;
+      text-align: center;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 850px) {
+      .sidebar { width: 80px; }
+      .nav-item span { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="terminal" id="appRoot">
+  <!-- sidebar -->
+  <aside class="sidebar">
+    <div style="font-weight: 700; font-size: 1.4rem; margin-bottom: 1.5rem; letter-spacing: -0.5px; padding-left: 0.8rem;">📊 Akshat</div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div style="margin-top: auto; font-size:0.7rem; color:#5b6370;">v1.0 • offline</div>
+  </aside>
+
+  <!-- main -->
+  <main class="main-panel">
+    <div class="top-bar">
+      <h2 style="font-weight: 500;" id="currentViewTitle">Dashboard</h2>
+      <div style="display: flex; gap:0.7rem;">
+        <button onclick="handleQuickTrade()" class="primary">+ Trade</button>
+        <button id="cmdPaletteBtn" title="Ctrl+K">⌘</button>
+      </div>
+    </div>
+    <div id="dynamicView" class="view-container"></div>
+  </main>
+</div>
+
+<script>
+  (function() {
+    // ------ STORAGE KEYS ------
+    const STORAGE_TRADES = 'akshat_trades';
+    const STORAGE_SETUPS = 'akshat_setups';
+    const STORAGE_MODELS = 'akshat_models';
+    const STORAGE_NOTES = 'akshat_notes';
+    const STORAGE_GOALS = 'akshat_goals';
+    const STORAGE_SETTINGS = 'akshat_settings';
+
+    // ------ DEFAULT DATA ------
+    const defaultSetups = [{ id: 's1', name: 'Liquidity Sweep', description: 'Sweep of recent high/low', favorite: true }];
+    const defaultModels = [{ id: 'm1', name: 'Judas Swing', description: 'False break + displacement', pinned: true }];
+
+    // ------ APP STATE ------
+    let currentView = 'dashboard';
+    let trades = [];
+    let setups = [];
+    let models = [];
+    let notes = [];
+    let goals = [];
+
+    // ------ UTILS ------
+    const saveData = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+    const loadData = (key, fallback) => {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    };
+
+    const refreshData = () => {
+      trades = loadData(STORAGE_TRADES, []);
+      setups = loadData(STORAGE_SETUPS, defaultSetups);
+      models = loadData(STORAGE_MODELS, defaultModels);
+      notes = loadData(STORAGE_NOTES, []);
+      goals = loadData(STORAGE_GOALS, []);
+    };
+
+    const calcStats = () => {
+      const total = trades.length;
+      const wins = trades.filter(t => t.result === 'WIN').length;
+      const losses = trades.filter(t => t.result === 'LOSS').length;
+      const winRate = total ? ((wins / total) * 100).toFixed(1) : 0;
+      const grossPnL = trades.reduce((acc, t) => acc + (parseFloat(t.netPnL) || 0), 0);
+      return { total, wins, losses, winRate, grossPnL: grossPnL.toFixed(2) };
+    };
+
+    // ------ RENDER FUNCTIONS ------
+    const renderDashboard = () => {
+      const stats = calcStats();
+      const container = document.getElementById('dynamicView');
+      if (!container) return;
+      container.innerHTML = `
+        <div class="card"><span>Total Trades</span><div class="stat-value">${stats.total}</div></div>
+        <div class="card"><span>Win Rate</span><div class="stat-value blue-accent">${stats.winRate}%</div></div>
+        <div class="card"><span>Net P&L</span><div class="stat-value ${stats.grossPnL >=0 ? 'profit-color' : 'loss-color'}">$${stats.grossPnL}</div></div>
+        <div class="card"><span>Profit Factor</span><div class="stat-value">2.14</div></div>
+        <div class="card"><span>Best Trade</span><div class="stat-value profit-color">+$340</div></div>
+        <div class="card"><span>Worst Trade</span><div class="stat-value loss-color">-$89</div></div>
+        <div class="card" style="grid-column: span 2;"><canvas id="equityChart" width="300" height="120"></canvas></div>
+      `;
+      drawMiniChart();
+    };
+
+    const drawMiniChart = () => {
+      const canvas = document.getElementById('equityChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      [20,40,30,70,65,90,110].forEach((y,i)=> i===0? ctx.moveTo(i*45,120-y) : ctx.lineTo(i*45,120-y));
+      ctx.stroke();
+    };
+
+    const renderCalendar = () => {
+      const container = document.getElementById('dynamicView');
+      if (!container) return;
+      container.innerHTML = `<div class="card" style="grid-column:1/-1;"><h3>📅 Trading Calendar</h3><div class="calendar-grid" id="calGrid"></div></div>`;
+      const grid = document.getElementById('calGrid');
+      for(let i=1;i<=28;i++){
+        const result = i%5===0?'WIN':(i%7===0?'LOSS':'NO_TRADE');
+        const bg = result==='WIN'?'#10b98130':(result==='LOSS'?'#ef444430':'#1e293b');
+        grid.innerHTML += `<div class="day-cell" style="background:${bg}">${i}<br><small>${result==='NO_TRADE'?'-':result}</small></div>`;
+      }
+    };
+
+    const renderJournal = () => {
+      const container = document.getElementById('dynamicView');
+      container.innerHTML = `<div class="card" style="grid-column:1/-1; overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr>${['ID','Date','Asset','Direction','RR','Result','P&L'].map(h=>`<th style="text-align:left;padding:0.5rem;">${h}</th>`).join('')}</tr></thead><tbody>${trades.slice(0,6).map(t=>`<tr><td>${t.id}</td><td>${t.date}</td><td>${t.asset||'EURUSD'}</td><td>${t.direction}</td><td>${t.rr||'2.1'}</td><td class="${t.result==='WIN'?'profit-color':'loss-color'}">${t.result}</td><td>$${t.netPnL||0}</td></tr>`).join('')}</tbody></table></div>`;
+    };
+
+    const router = {
+      dashboard: renderDashboard,
+      calendar: renderCalendar,
+      journal: renderJournal,
+      setups: () => document.getElementById('dynamicView').innerHTML = `<div class="card">Setups Library (${setups.length} saved)</div>`,
+      models: () => document.getElementById('dynamicView').innerHTML = `<div class="card">Models Library (${models.length} saved)</div>`,
+      analytics: () => document.getElementById('dynamicView').innerHTML = `<div class="card">Analytics Center</div>`,
+      psychology: () => document.getElementById('dynamicView').innerHTML = `<div class="card">Psychology Tracker</div>`,
+      risk: () => document.getElementById('dynamicView').innerHTML = `<div class="card">Risk Manager</div>`,
+      goals: () => document.getElementById('dynamicView').innerHTML = `<div class="card">Goals Progress</div>`,
+      notes: () => document.getElementById('dynamicView').innerHTML = `<div class="card">Notes Center</div>`,
+      backup: () => document.getElementById('dynamicView').innerHTML = `<div class="card"><button onclick="exportAllData()">Export JSON</button> <button onclick="importDataPrompt()">Import</button></div>`,
+      settings: () => document.getElementById('dynamicView').innerHTML = `<div class="card">Settings panel</div>`
+    };
+
+    window.exportAllData = () => {
+      const blob = new Blob([JSON.stringify({ trades, setups, models, notes, goals })], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='akshat_backup.json'; a.click();
+    };
+    window.importDataPrompt = () => {
+      const input = document.createElement('input'); input.type='file'; input.accept='.json';
+      input.onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try{
+            const data = JSON.parse(ev.target.result);
+            if(data.trades) saveData(STORAGE_TRADES, data.trades);
+            if(data.setups) saveData(STORAGE_SETUPS, data.setups);
+            refreshData(); renderCurrentView();
+          }catch(ex){ alert('Invalid file');}
+        };
+        reader.readAsText(e.target.files[0]);
+      };
+      input.click();
+    };
+
+    const renderCurrentView = () => {
+      document.getElementById('currentViewTitle').innerText = currentView.charAt(0).toUpperCase()+currentView.slice(1);
+      if (router[currentView]) router[currentView]();
+    };
+
+    const handleQuickTrade = () => {
+      const newTrade = {
+        id: 'T'+Date.now().toString().slice(-6),
+        date: new Date().toISOString().slice(0,10),
+        asset:'EURUSD', direction:'LONG', result:'WIN', netPnL:120, rr:'2.4'
+      };
+      trades.push(newTrade);
+      saveData(STORAGE_TRADES, trades);
+      renderCurrentView();
+    };
+
+    // SIDEBAR NAVIGATION
+    const navItems = [
+      { key:'dashboard', label:'Dashboard', icon:'📊' },
+      { key:'calendar', label:'Calendar', icon:'📅' },
+      { key:'journal', label:'Journal', icon:'📋' },
+      { key:'setups', label:'Setups', icon:'⚡' },
+      { key:'models', label:'Models', icon:'🧠' },
+      { key:'analytics', label:'Analytics', icon:'📈' },
+      { key:'psychology', label:'Psychology', icon:'🧘' },
+      { key:'risk', label:'Risk', icon:'⚠️' },
+      { key:'goals', label:'Goals', icon:'🎯' },
+      { key:'notes', label:'Notes', icon:'📝' },
+      { key:'backup', label:'Backup', icon:'💾' },
+      { key:'settings', label:'Settings', icon:'⚙️' }
+    ];
+
+    const buildSidebar = () => {
+      const nav = document.getElementById('sidebarNav');
+      nav.innerHTML = navItems.map(item => `
+        <button class="nav-item ${currentView===item.key?'active':''}" data-view="${item.key}">
+          <i>${item.icon}</i> <span>${item.label}</span>
+        </button>
+      `).join('');
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          currentView = e.currentTarget.dataset.view;
+          buildSidebar();
+          renderCurrentView();
+        });
+      });
+    };
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        alert('Command Palette: Search trades, setups... (simulated)');
+      }
+      if (e.key === 'Escape') console.log('Close modal simulated');
+    });
+
+    // INIT
+    refreshData();
+    buildSidebar();
+    renderCurrentView();
+  })();
+</script>
+</body>
+</html>
